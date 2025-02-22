@@ -1,7 +1,7 @@
 function plotarGrafico(audio)
     digito = audio.digito;
     repeticao = audio.repeticao;
-    sinal = audio.sinal{1}; 
+    sinal = audio.sinal; 
     taxaAmostragem = audio.taxaAmostragem;
     
     duracao = (0:length(sinal)-1) / taxaAmostragem;
