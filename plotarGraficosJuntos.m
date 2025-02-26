@@ -17,6 +17,7 @@ function plotarGraficosJuntos(dados, repeticao)
         
         nexttile;
         plot(duracao, sinal);
+        ylim([-5 5]);
         xlabel('Tempo [s]');
         ylabel('Amplitude');
         title(['Dígito ', num2str(i-1), ' ; Repetição ', num2str(repeticao)]);
