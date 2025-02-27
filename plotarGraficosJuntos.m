@@ -1,4 +1,6 @@
 function plotarGraficosJuntos(dados, repeticao)
+    %Plota os gráficos de todos os digitos duma certa repetição.
+
     figure()
     sgtitle('Gráficos dos Áudios Processados');
     

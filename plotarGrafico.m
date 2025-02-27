@@ -1,10 +1,13 @@
 function plotarGrafico(audio)
+    %Plota o gráfico de um sinal de áudio no domínio do tempo.
+
     digito = audio.digito;
     repeticao = audio.repeticao;
     sinal = audio.sinal; 
     taxaAmostragem = audio.taxaAmostragem;
     
-    duracao = (0:length(sinal)-1) / taxaAmostragem;
+    %Duracao = tamanhoDoVetorDeAmplitudes / taxaDeAmostragem
+    duracao = (0:length(sinal)-1) / taxaAmostragem; 
     
     figure;
     plot(duracao, sinal);
