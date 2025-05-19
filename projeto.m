@@ -555,13 +555,73 @@ cor = colorbar;
 cor.Ticks = 0:9;  
 cor.TickLabels = {'0','1','2','3','4','5','6','7','8','9'};
 
-% 25. Aplicação da DWT
+% 25. Aplicação da Transformada Wavelet Discreta (DWT)
 % ---------------------------------------------------------------
-% Aplica a Transformada de Wavelet Discreta (DWT) para obter os coeficientes de detalhe e de aproximação.
-% Obter os valores de energia a partir dos coeficientes e representar os resultados, utilizando gráficos semelhantes aos exemplificados na Figura 3.
-% Compare e discuta os resultados obtidos com a STFT e com a DWT.
+% Aplica a DWT para obter os coeficientes de detalhe e aproximação em múltiplos níveis.
+% Calcula a energia dos coeficientes e representa os resultados graficamente.
 % ---------------------------------------------------------------
+onda = 'db4'; % Escolha da wavelet (pode ser alterada)
+nivel = 3;    % Nível de decomposição (ajuste conforme necessário)
 
+% Inicializar arrays para armazenar as energias
+energiesA = zeros(length(dados), 1);
+energiesD1 = zeros(length(dados), 1);
+energiesD2 = zeros(length(dados), 1);
+energiesD3 = zeros(length(dados), 1);
+
+for i = 1:length(dados)
+
+    sinal = dados(i).sinal;
+    [coeficientes, comprimentos] = wavedec(sinal, nivel, onda);
+    
+    % Coeficientes de aproximação no último nível
+    cA = appcoef(coeficientes, comprimentos, onda, nivel);
+    
+    % Coeficientes de detalhe em cada nível
+    cD1 = detcoef(coeficientes, comprimentos, 1);
+    cD2 = detcoef(coeficientes, comprimentos, 2);
+    cD3 = detcoef(coeficientes, comprimentos, 3);
+
+    % Energia dos coeficientes
+    energiesA(i) = sum(cA.^2);
+    energiesD1(i) = sum(cD1.^2);
+    energiesD2(i) = sum(cD2.^2);
+    energiesD3(i) = sum(cD3.^2);
+
+    % Armazenar na estrutura de dados
+    dados(i).dwtEnergyA = energiesA(i);
+    dados(i).dwtEnergyD1 = energiesD1(i);
+    dados(i).dwtEnergyD2 = energiesD2(i);
+    dados(i).dwtEnergyD3 = energiesD3(i);
+
+end
+
+% Boxplots das energias por dígito
+digitos = [dados.digito]';
+
+figure;
+boxplot(energiesA, digitos);
+title('Energia dos Coeficientes de Aproximação (A3) por Dígito');
+xlabel('Dígito');
+ylabel('Energia');
+
+figure;
+boxplot(energiesD1, digitos);
+title('Energia dos Coeficientes de Detalhe (D1) por Dígito');
+xlabel('Dígito');
+ylabel('Energia');
+
+figure;
+boxplot(energiesD2, digitos);
+title('Energia dos Coeficientes de Detalhe (D2) por Dígito');
+xlabel('Dígito');
+ylabel('Energia');
+
+figure;
+boxplot(energiesD3, digitos);
+title('Energia dos Coeficientes de Detalhe (D3) por Dígito');
+xlabel('Dígito');
+ylabel('Energia');
 
 % 26. Atualização do ficheiro .mat com as novas características
 % ---------------------------------------------------------------
