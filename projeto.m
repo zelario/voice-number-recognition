@@ -489,27 +489,37 @@ for digito = 0:9
         ' | Janela: ', num2str(tamanhoJanela), ' | Overlap: ', num2str(overlap*100), '% | NFFT: ', num2str(numFFT)]);
 end
 
-% 23. Extração de características de tempo-frequência (corrigido e comentado)
+% 23. Extração de características de tempo-frequência
 % ---------------------------------------------------------------
-% Calcula e armazena pelo menos 5 características de tempo-frequência para cada áudio.
+% Calcula e armazena 5 características de tempo-frequência para cada áudio:
+% - Entropia
+% - Fluxo Médio
+% - Planicidade Média
+% - Centroide Médio
+% - Largura de Banda Média
 % ---------------------------------------------------------------
 for i = 1:length(dados)
     sinal = dados(i).sinal;
     [s,f,t,p] = spectrogram(sinal, tamanhoJanela, numOverlap, numFFT, taxaAmostragem);
-    p = abs(p).^2;
-    meanP = mean(p,2); % Média da potência por frequência
-    % 1. Frequência média (weighted mean)
-    dados(i).specMeanFreq = sum(f .* meanP) / sum(meanP);
-    % 2. Frequência máxima (frequência com maior energia média)
-    [~, idxMax] = max(meanP);
-    dados(i).specMaxFreq = f(idxMax);
+    potencia = abs(p).^2;
+    mediaPotencia = mean(potencia,2); 
+    
+    % 1. Frequência média 
+    dados(i).specMediaFrequencia = sum(f .* mediaPotencia) / sum(mediaPotencia);
+    
+    % 2. Fluxo Espectral (média das diferenças entre frames consecutivos)
+    fluxo = sum(abs(diff(potencia, 1, 2)), 1);
+    dados(i).specFluxo = mean(fluxo);
+    
     % 3. Largura de banda (desvio padrão da distribuição de energia)
-    dados(i).specBandwidth = sqrt(sum(((f - dados(i).specMeanFreq).^2) .* meanP) / sum(meanP));
+    dados(i).specLarguraBanda = sqrt(sum(((f - dados(i).specMediaFrequencia).^2) .* mediaPotencia) / sum(mediaPotencia));
+    
     % 4. Entropia espectral
-    p_norm = meanP / sum(meanP);
-    dados(i).specEntropy = -sum(p_norm .* log(p_norm + eps));
+    p_norm = mediaPotencia / sum(mediaPotencia);
+    dados(i).specEntropia = -sum(p_norm .* log(p_norm + eps));
+    
     % 5. Energia total
-    dados(i).specEnergy = sum(p(:));
+    dados(i).specEnergia = sum(potencia(:));
 end
 
 % 24. Representação gráfica das características tempo-frequência
@@ -517,18 +527,33 @@ end
 % Utiliza boxplots para visualizar a distribuição das características tempo-frequência por dígito.
 % ---------------------------------------------------------------
 digitos = [dados.digito]';
-features = [[dados.specMeanFreq]', [dados.specMaxFreq]', [dados.specBandwidth]', ...
-            [dados.specEntropy]', [dados.specEnergy]'];
+features = [[dados.specMediaFrequencia]', [dados.specFluxo]', [dados.specLarguraBanda]', ...
+            [dados.specEntropia]', [dados.specEnergia]'];
 
-feature_names = {'Frequência Média', 'Frequência Máxima', ...
-                 'Largura de Banda', 'Entropia Espectral', 'Energia'};
+feature_names = {'Frequência Média', 'Fluxo Espectral', ...
+                 'Largura de Banda', 'Entropia Espectral', 'Energia Total'};
 
 for i = 1:5
     figure;
     boxplot(features(:,i), digitos);
     title(feature_names{i});
     xlabel('Dígito');
+    ylabel('Valor');
 end
+
+figure;
+scatter3(features(:,1), features(:,4),features(:,5), 20, digitos, 'filled');  
+xlabel('Frequência Média'); 
+ylabel('Entropia Espectral'); 
+zlabel('Energia Total');
+grid on;
+title('Distribuição das Características Tempo-Frequência');
+
+colormap(jet(10));  
+caxis([0 9]); 
+cor = colorbar;
+cor.Ticks = 0:9;  
+cor.TickLabels = {'0','1','2','3','4','5','6','7','8','9'};
 
 % 25. Aplicação da DWT
 % ---------------------------------------------------------------
